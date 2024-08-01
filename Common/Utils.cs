@@ -9,6 +9,11 @@ public static class Utils
 
     public static async Task<string> GetInput(int day)
     {
+        var cachePath = $"./cache/{day.ToString("00")}.txt";
+
+        if (File.Exists(cachePath))
+            return await File.ReadAllTextAsync(cachePath);
+
         var configurationBuilder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
         var configuration = configurationBuilder.Build();
 
@@ -24,7 +29,15 @@ public static class Utils
         HttpResponseMessage response = await client.GetAsync(url);
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var cacheFolder = $"./cache";
+        if (!Directory.Exists(cacheFolder))
+            Directory.CreateDirectory(cacheFolder);
+
+        await File.WriteAllTextAsync(cachePath, content);
+
+        return content;
 }
 }
 
